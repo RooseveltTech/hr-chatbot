@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Liberty HR Assistant</title>
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff;
+            margin: 0;
+            padding: 0;
+        }
+
+        .chat-container {
+            max-width: 700px;
+            margin: 50px auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            height: 80vh;
+        }
+
+        .chat-header {
+            background: #2196F3;
+            color: white;
+            padding: 20px;
+            border-radius: 12px 12px 0 0;
+            font-size: 20px;
+        }
+
+        .chat-body {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .message {
+            margin-bottom: 15px;
+        }
+
+        .user {
+            text-align: right;
+        }
+
+        .user span {
+            background: #bbdefb;
+            padding: 10px 15px;
+            border-radius: 15px;
+            display: inline-block;
+        }
+
+        .bot span {
+            background: #e3f2fd;
+            padding: 10px 15px;
+            border-radius: 15px;
+            display: inline-block;
+        }
+
+        .chat-footer {
+            padding: 15px;
+            border-top: 1px solid #ddd;
+            display: flex;
+        }
+
+        input {
+            flex: 1;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            margin-left: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1976D2;
+        }
+
+        .loading {
+            font-size: 12px;
+            color: gray;
+        }
+    </style>
+</head>
+<body>
+
+<div class="chat-container">
+    <div class="chat-header">
+        Liberty HR Assistant
+    </div>
+
+    <div class="chat-body" id="chat-body"></div>
+
+    <div class="chat-footer">
+        <input type="text" id="question" placeholder="Ask HR a question..." />
+        <button onclick="sendMessage()">Send</button>
+    </div>
+</div>
+
+<script>
+async function sendMessage() {
+    const input = document.getElementById("question");
+    const chatBody = document.getElementById("chat-body");
+    const message = input.value.trim();
+
+    if (!message) return;
+
+    // Add user message
+    chatBody.innerHTML += `
+        <div class="message user">
+            <span>${message}</span>
+        </div>
+    `;
+
+    input.value = "";
+    chatBody.innerHTML += `<div class="loading" id="loading">Thinking...</div>`;
+    chatBody.scrollTop = chatBody.scrollHeight;
+
+    try {
+        const response = await fetch("/api/chat/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCSRFToken()
+            },
+            body: JSON.stringify({ question: message })
+        });
+
+        const data = await response.json();
+
+        document.getElementById("loading").remove();
+
+        chatBody.innerHTML += `
+            <div class="message bot">
+                <span>${data.answer}</span>
+            </div>
+        `;
+
+        chatBody.scrollTop = chatBody.scrollHeight;
+
+    } catch (error) {
+        document.getElementById("loading").remove();
+        chatBody.innerHTML += `
+            <div class="message bot">
+                <span>Something went wrong. Please try again.</span>
+            </div>
+        `;
+    }
+}
+
+function getCSRFToken() {
+    return document.querySelector('meta[name="csrf-token"]').getAttribute("content");
+}
+</script>
+
+</body>
+</html>
