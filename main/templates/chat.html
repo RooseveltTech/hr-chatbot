@@ -1,95 +1,176 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Liberty HR Assistant</title>
     <meta name="csrf-token" content="{{ csrf_token }}">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f8ff;
-            margin: 0;
-            padding: 0;
-        }
+    * {
+        box-sizing: border-box;
+    }
 
-        .chat-container {
-            max-width: 700px;
-            margin: 50px auto;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            display: flex;
-            flex-direction: column;
-            height: 80vh;
-        }
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f0f8ff;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
 
+    .chat-container {
+        width: 100%;
+        max-width: 700px;
+        height: 100vh;
+        background: white;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .chat-header {
+        background: #2196F3;
+        color: white;
+        padding: 16px;
+        font-size: 18px;
+        text-align: center;
+    }
+
+    .chat-body {
+        flex: 1;
+        padding: 15px;
+        overflow-y: auto;
+    }
+
+    .message {
+        margin-bottom: 12px;
+        display: flex;
+    }
+
+    .user {
+        justify-content: flex-end;
+    }
+
+    .user span {
+        background: #bbdefb;
+        padding: 10px 14px;
+        border-radius: 18px 18px 4px 18px;
+        max-width: 75%;
+        word-wrap: break-word;
+        font-size: 14px;
+    }
+
+    .bot {
+        justify-content: flex-start;
+    }
+
+    .bot span {
+        background: #e3f2fd;
+        padding: 10px 14px;
+        border-radius: 18px 18px 18px 4px;
+        max-width: 75%;
+        word-wrap: break-word;
+        font-size: 14px;
+    }
+
+    .chat-footer {
+        padding: 10px;
+        border-top: 1px solid #ddd;
+        display: flex;
+        gap: 8px;
+    }
+
+    input {
+        flex: 1;
+        padding: 12px;
+        border-radius: 20px;
+        border: 1px solid #ccc;
+        font-size: 14px;
+        outline: none;
+    }
+
+    input:focus {
+        border-color: #2196F3;
+    }
+
+    button {
+        background: #2196F3;
+        color: white;
+        border: none;
+        padding: 12px 16px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: 14px;
+        min-width: 70px;
+    }
+
+    button:hover {
+        background: #1976D2;
+    }
+
+    .loading {
+        font-size: 12px;
+        color: gray;
+        margin-top: 5px;
+    }
+
+    .typing-indicator {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        margin-bottom: 12px;
+    }
+
+    .typing-indicator span {
+        width: 8px;
+        height: 8px;
+        background: #90caf9;
+        border-radius: 50%;
+        animation: bounce 1.4s infinite ease-in-out both;
+    }
+
+    .typing-indicator span:nth-child(1) {
+        animation-delay: -0.32s;
+    }
+
+    .typing-indicator span:nth-child(2) {
+        animation-delay: -0.16s;
+    }
+
+    @keyframes bounce {
+        0%, 80%, 100% {
+            transform: scale(0);
+        }
+        40% {
+            transform: scale(1);
+        }
+    }
+
+    /* ✅ Extra Mobile Optimization */
+    @media (max-width: 480px) {
         .chat-header {
-            background: #2196F3;
-            color: white;
-            padding: 20px;
-            border-radius: 12px 12px 0 0;
-            font-size: 20px;
+            font-size: 16px;
+            padding: 12px;
         }
 
-        .chat-body {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-        }
-
-        .message {
-            margin-bottom: 15px;
-        }
-
-        .user {
-            text-align: right;
-        }
-
-        .user span {
-            background: #bbdefb;
-            padding: 10px 15px;
-            border-radius: 15px;
-            display: inline-block;
-        }
-
+        .user span,
         .bot span {
-            background: #e3f2fd;
-            padding: 10px 15px;
-            border-radius: 15px;
-            display: inline-block;
-        }
-
-        .chat-footer {
-            padding: 15px;
-            border-top: 1px solid #ddd;
-            display: flex;
+            max-width: 85%;
+            font-size: 13px;
         }
 
         input {
-            flex: 1;
+            font-size: 13px;
             padding: 10px;
-            border-radius: 8px;
-            border: 1px solid #ccc;
         }
 
         button {
-            background: #2196F3;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            margin-left: 10px;
-            border-radius: 8px;
-            cursor: pointer;
+            font-size: 13px;
+            padding: 10px 14px;
         }
-
-        button:hover {
-            background: #1976D2;
-        }
-
-        .loading {
-            font-size: 12px;
-            color: gray;
-        }
-    </style>
+    }
+</style>
 </head>
 <body>
 
@@ -122,7 +203,15 @@ async function sendMessage() {
     `;
 
     input.value = "";
-    chatBody.innerHTML += `<div class="loading" id="loading">Thinking...</div>`;
+    chatBody.innerHTML += `
+    <div class="message bot" id="loading">
+        <div class="typing-indicator">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </div>
+`;
     chatBody.scrollTop = chatBody.scrollHeight;
 
     try {
@@ -136,6 +225,7 @@ async function sendMessage() {
         });
 
         const data = await response.json();
+        console.log(data)
 
         document.getElementById("loading").remove();
 

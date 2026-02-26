@@ -26,33 +26,52 @@ class ChatAPIView(APIView):
         try:
             # 1️⃣ Get embedding
             query_embedding = get_embedding(question)
-
+            # print(query_embedding)
             # 2️⃣ Search FAISS
-            results = search(query_embedding, k=5)
+            # results = search(query_embedding)
+            results = search(
+                query=question,
+                query_embedding=query_embedding,
+                k=10
+            )
+            print(results)
 
             # 3️⃣ If no results, fallback
             if not results:
                 return Response({
-                    "answer": "I’m not sure. Please send your question to hr@libertyng.com"
+                    "answer": "I'm not sure. Please send your question to hr@libertyng.com"
                 })
 
             # 4️⃣ Combine context
-            context_text = "\n".join(results)
+            # context_text = "\n".join(results)
+            # context_text = ""
+            # for item in results:
+            #     print(item)
+            #     context_text += f"[Book ID: {item['book_id']}]\n{item['text']}\n\n"
+            context_text = ""
 
+            for item in results:
+                context_text += f"""
+[Book Title: {item['book_title']}]
+            {item['text']}
+
+            """
+            print("before answer")
             # 5️⃣ Generate answer from LLM (optional)
             answer = generate_answer(question, context_text)
+            print("after answer")
 
             return Response({"answer": answer})
 
         except ValueError as ve:
             # Catch dimension mismatch or other known FAISS errors
             return Response({
-                "answer": "I’m not sure. Please send your question to hr@libertyng.com"
+                "answer": "I'm not sure. Please send your question to hr@libertyng.com"
             })
 
-        except Exception as e:
-            # Catch all unexpected errors
-            print(f"Chat API Error: {e}")  # optional: log to Sentry or file
-            return Response({
-                "answer": "I’m not sure. Please send your question to hr@libertyng.com"
-            })
+        # except Exception as e:
+        #     # Catch all unexpected errors
+        #     print(f"Chat API Error: {e}")  # optional: log to Sentry or file
+        #     return Response({
+        #         "answer": "I'm not sure. Please send your question to hr@libertyng.com"
+        #     })

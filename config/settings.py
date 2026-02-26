@@ -123,8 +123,9 @@ MEDIA_ROOT = BASE_DIR / "media"
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-OLLAMA_URL = "http://localhost:11434/api/embeddings"
-OLLAMA_MODEL = "mistral"
+OLLAMA_URL = config("OLLAMA_URL")
+OLLAMA_MODEL = config("OLLAMA_MODEL")
+OLLAMA_CHAT_MODEL = config("OLLAMA_CHAT_MODEL")
 AI_MODE = config("AI_MODE", "local")
 
 OPENAI_API_KEY = config("OPENAI_API_KEY")

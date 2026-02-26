@@ -13,19 +13,40 @@ def get_embedding(text):
         url = settings.OLLAMA_URL
         model = settings.OLLAMA_MODEL
 
+        # payload = {
+        #     "model": model,
+        #     "input": text
+        # }
+
+        # response = requests.post(url, json=payload)
+
+        # if response.status_code != 200:
+        #     raise Exception(f"Ollama API error: {response.text}")
+
+        # data = response.json()
+        # # Ollama returns embeddings in 'embedding' key (check API docs)
+        # return data.get("embedding")
         payload = {
             "model": model,
-            "input": text
+            "prompt": text   # ✅ FIXED
         }
 
-        response = requests.post(url, json=payload)
+        try:
+            response = requests.post(url, json=payload)
+            response.raise_for_status()
 
-        if response.status_code != 200:
-            raise Exception(f"Ollama API error: {response.text}")
+            data = response.json()
+            embedding = data.get("embedding")
 
-        data = response.json()
-        # Ollama returns embeddings in 'embedding' key (check API docs)
-        return data.get("embedding")
+            if not embedding:
+                print("Ollama returned empty embedding.")
+                return None
+
+            return np.array(embedding, dtype="float32")
+
+        except Exception as e:
+            print("Ollama embedding error:", e)
+            return None
     else:
 
         """
@@ -44,5 +65,6 @@ def get_embedding(text):
             return np.array(embedding, dtype="float32")
 
         except Exception as e:
+            print
             print("OpenAI embedding error:", e)
             return []
