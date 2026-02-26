@@ -34,7 +34,7 @@ class ChatAPIView(APIView):
                 query_embedding=query_embedding,
                 k=10
             )
-            print(results)
+            # print(results)
 
             # 3️⃣ If no results, fallback
             if not results:
@@ -56,10 +56,10 @@ class ChatAPIView(APIView):
             {item['text']}
 
             """
-            print("before answer")
+            # print("before answer")
             # 5️⃣ Generate answer from LLM (optional)
             answer = generate_answer(question, context_text)
-            print("after answer")
+            # print("after answer")
 
             return Response({"answer": answer})
 

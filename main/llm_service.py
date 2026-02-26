@@ -63,7 +63,6 @@ ANSWER:
         """
         Generate answer from OpenAI Chat model using system prompt and context.
         """
-        print(settings.OPENAI_API_KEY)
         try:
             messages = [
                 {"role": "system", "content": prompt},
